@@ -1,7 +1,6 @@
 """Network connectivity monitor: pings target at interval and logs downtime."""
 import platform
 import subprocess
-import sys
 import threading
 import time
 

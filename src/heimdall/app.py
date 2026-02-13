@@ -1,6 +1,5 @@
 """Flask app: API and live status dashboard."""
 import socket
-import time
 from flask import Flask, jsonify, render_template, request
 
 from . import config
