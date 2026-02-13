@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="static/logo.png" alt="Heimdall logo" width="420" />
+</p>
+
 # Heimdall Network Watcher
 
 A Python app that continuously polls your home WiFi or network for uptime, logs any downtime, and serves a live status dashboard.
@@ -28,7 +32,8 @@ A Python app that continuously polls your home WiFi or network for uptime, logs 
 
 3. **Open the dashboard**
 
-   In your browser go to: **http://localhost:5050**
+   In your browser go to: **http://localhost:9000**
+   On the same WiFi, other devices can use **http://<your-computer-lan-ip>:9000** (for example, `http://192.168.1.42:9000`).
 
 The monitor runs in the background and the dashboard auto-refreshes every few seconds.
 
@@ -43,7 +48,7 @@ Environment variables (optional):
 | `HEIMDALL_PING_TIMEOUT` | Ping timeout in seconds | `5` |
 | `HEIMDALL_DB` | SQLite database path | `heimdall.db` |
 | `HEIMDALL_HOST` | Flask bind address | `0.0.0.0` |
-| `HEIMDALL_PORT` | Flask port | `5050` |
+| `HEIMDALL_PORT` | Flask port | `9000` |
 
 **Example:** Monitor your router and check every 5 seconds:
 

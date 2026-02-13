@@ -12,8 +12,9 @@
 <body>
   <div class="wrap">
     <header class="header">
-      <h1 class="title">Heimdall</h1>
-      <p class="subtitle">Network watcher - Monitoring <code id="targetCode">{{ target }}</code></p>
+      <img class="brand-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Heimdall logo" />
+      <p class="subtitle">Currently monitoring: <code id="targetCode">{{ target }}</code></p>
+      <p class="subtitle">Access URL (any device on the same network): <code>http://{{ lan_ip }}:{{ flask_port }}</code></p>
     </header>
 
     <section class="status-card">

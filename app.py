@@ -1,4 +1,5 @@
 """Flask app: API and live status dashboard."""
+import socket
 import time
 from flask import Flask, jsonify, render_template, request
 
@@ -9,9 +10,26 @@ from heimdall import get_status, start_monitor
 app = Flask(__name__)
 
 
+def _get_local_lan_ip():
+    """Best-effort LAN IP detection for sharing URL on local WiFi."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        sock.close()
+
+
 @app.route("/")
 def index():
-    return render_template("dashboard.html", target=config.PING_TARGET)
+    return render_template(
+        "dashboard.html",
+        target=config.PING_TARGET,
+        lan_ip=_get_local_lan_ip(),
+        flask_port=config.SERVER_PORT,
+    )
 
 
 @app.route("/api/status")

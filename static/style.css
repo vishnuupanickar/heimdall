@@ -36,6 +36,13 @@ body {
   margin-bottom: 2rem;
 }
 
+.brand-logo {
+  display: block;
+  width: min(360px, 92%);
+  height: auto;
+  margin: 0 auto 0.85rem auto;
+}
+
 .title {
   font-size: 1.75rem;
   font-weight: 700;
