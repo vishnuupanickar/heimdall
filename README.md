@@ -18,6 +18,24 @@ A Python app that continuously polls your home WiFi and network uptime, logs any
 
 ## Quick start
 
+Project structure:
+
+```text
+heimdall/
+  pyproject.toml
+  README.md
+  src/
+    app.py
+    config.py
+    database.py
+    heimdall.py
+    templates/
+      dashboard.html
+    static/
+      style.css
+      logo.png
+```
+
 1. **Create a virtual environment and install dependencies**
 
    ```bash
@@ -30,7 +48,7 @@ A Python app that continuously polls your home WiFi and network uptime, logs any
 2. **Run the app**
 
    ```bash
-   python app.py
+   python src/app.py
    ```
 
 3. **Open the dashboard**
@@ -58,7 +76,7 @@ Environment variables (optional):
 ```bash
 set HEIMDALL_PING_TARGET=8.8.8.8
 set HEIMDALL_POLL_INTERVAL=5
-python app.py
+python src/app.py
 ```
 
 On Linux/macOS use `export HEIMDALL_PING_TARGET=192.168.1.1` etc.
