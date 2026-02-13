@@ -23,14 +23,14 @@ Install from PyPI:
 
 ```bash
 pip install heimdall-network-monitor
-python -m app
+python -m heimdall
 ```
 
 Install from local source:
 
 ```bash
 pip install .
-python -m app
+python -m heimdall
 ```
 
 ## Quick start
@@ -45,6 +45,7 @@ heimdall/
     app.py
     config.py
     database.py
+    monitor.py
     heimdall.py
     templates/
       dashboard.html
@@ -65,7 +66,7 @@ heimdall/
 2. **Run the app**
 
    ```bash
-   python src/app.py
+   python src/heimdall.py
    ```
 
 3. **Open the dashboard**
@@ -93,7 +94,7 @@ Environment variables (optional):
 ```bash
 set HEIMDALL_PING_TARGET=8.8.8.8
 set HEIMDALL_POLL_INTERVAL=5
-python src/app.py
+python src/heimdall.py
 ```
 
 On Linux/macOS use `export HEIMDALL_PING_TARGET=192.168.1.1` etc.
