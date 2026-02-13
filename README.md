@@ -17,6 +17,22 @@ A Python app that continuously polls your home WiFi and network uptime, logs any
 - **Live dashboard** - Web UI showing current status, 24h uptime %, and recent downtime events
 - **Cross-platform** - Uses the system `ping` command (Windows and Unix)
 
+## Install with pip
+
+Install from PyPI:
+
+```bash
+pip install heimdall-network-monitor
+python -m app
+```
+
+Install from local source:
+
+```bash
+pip install .
+python -m app
+```
+
 ## Quick start
 
 Project structure:
