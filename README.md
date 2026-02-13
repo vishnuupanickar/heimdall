@@ -4,7 +4,7 @@
 
 # Heimdall Network Watcher
 
-A Python app that continuously polls your home WiFi or network for uptime, logs any downtime, and serves a live status dashboard.
+A Python app that continuously polls your home WiFi and network uptime, logs any downtime, and serves a live status dashboard in your browser. The dashboard can be accessed by any device on the same network.
 
 ![Alt text](/static/screenshot.png?raw=true "Heimdall App")
 
