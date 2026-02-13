@@ -6,6 +6,9 @@
 
 A Python app that continuously polls your home WiFi or network for uptime, logs any downtime, and serves a live status dashboard.
 
+![Alt text](/static/screenshot.png?raw=true "Heimdall App")
+
+
 ## Features
 
 - **Continuous monitoring** - Pings a configurable target (default: `8.8.8.8`) at a set interval
@@ -53,7 +56,7 @@ Environment variables (optional):
 **Example:** Monitor your router and check every 5 seconds:
 
 ```bash
-set HEIMDALL_PING_TARGET=192.168.1.1
+set HEIMDALL_PING_TARGET=8.8.8.8
 set HEIMDALL_POLL_INTERVAL=5
 python app.py
 ```
