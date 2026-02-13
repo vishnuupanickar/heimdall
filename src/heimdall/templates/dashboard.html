@@ -42,6 +42,7 @@
 
     <section class="downtimes-section">
       <h2 class="section-title">Recent downtime</h2>
+      <p class="subtitle" id="downtimeTimezone" style="margin-bottom: 0.5rem;">Times shown in your local timezone.</p>
       <div class="downtimes-list" id="downtimesList">
         <p class="empty" id="downtimesEmpty">No recorded downtime.</p>
       </div>
@@ -79,6 +80,7 @@
     const downtimeSecEl = document.getElementById('downtimeSec');
     const downtimesList = document.getElementById('downtimesList');
     const downtimesEmpty = document.getElementById('downtimesEmpty');
+    const downtimeTimezone = document.getElementById('downtimeTimezone');
     const targetCode = document.getElementById('targetCode');
     const settingsForm = document.getElementById('settingsForm');
     const cfgTargets = document.getElementById('cfgTargets');
@@ -102,6 +104,13 @@
       const h = Math.floor(m / 60);
       const mm = m % 60;
       return h + 'h ' + mm + 'm ' + s + 's';
+    }
+
+    function renderTimezoneHint() {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      downtimeTimezone.textContent = tz
+        ? 'Times shown in your local timezone (' + tz + ').'
+        : 'Times shown in your local timezone.';
     }
 
     async function fetchJson(path) {
@@ -235,6 +244,7 @@
       }
     });
 
+    renderTimezoneHint();
     loadConfig();
     refresh();
     setInterval(refresh, 3000);
