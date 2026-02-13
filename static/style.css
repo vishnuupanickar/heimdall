@@ -1,0 +1,233 @@
+﻿:root {
+  --bg: #0d0f14;
+  --surface: #151922;
+  --border: #252a36;
+  --text: #e6e9ef;
+  --muted: #8b92a3;
+  --up: #7ee787;
+  --down: #ff7b72;
+  --accent: #79c0ff;
+  --radius: 12px;
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.25rem 0;
+  background: linear-gradient(135deg, var(--accent), #a371f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.subtitle code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background: var(--surface);
+  border-radius: 6px;
+  color: var(--accent);
+}
+
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.status-badge.up {
+  background: rgba(126, 231, 135, 0.15);
+  color: var(--up);
+}
+
+.status-badge.down {
+  background: rgba(255, 123, 114, 0.15);
+  color: var(--down);
+}
+
+.status-badge.unknown {
+  background: rgba(139, 146, 163, 0.2);
+  color: var(--muted);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-badge.up .status-dot {
+  background: var(--up);
+  box-shadow: 0 0 12px var(--up);
+}
+
+.status-badge.down .status-dot {
+  background: var(--down);
+  box-shadow: 0 0 12px var(--down);
+}
+
+.status-badge.unknown .status-dot {
+  background: var(--muted);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.5; }
+}
+
+.last-check {
+  margin: 1rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.uptime-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+
+.uptime-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--up), #56d364);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.uptime-pct {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+}
+
+.downtimes-section {
+  margin-bottom: 2rem;
+}
+
+.downtimes-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.downtimes-list .empty {
+  margin: 0;
+  padding: 1.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.downtime-item {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.downtime-item:last-child {
+  border-bottom: none;
+}
+
+.downtime-time {
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.downtime-dur {
+  color: var(--down);
+  font-weight: 600;
+  flex-shrink: 0;
+}

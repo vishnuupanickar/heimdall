@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Heimdall â€“ Network Status</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1 class="title">Heimdall</h1>
+      <p class="subtitle">Network watcher Â· Monitoring <code>{{ target }}</code></p>
+    </header>
+
+    <section class="status-card">
+      <div class="status-badge" id="statusBadge" aria-live="polite">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-label" id="statusLabel">Checkingâ€¦</span>
+      </div>
+      <p class="last-check" id="lastCheck">â€”</p>
+      <div class="uptime-bar" aria-hidden="true">
+        <div class="uptime-fill" id="uptimeFill" style="width: 0%"></div>
+      </div>
+      <p class="uptime-pct" id="uptimePct">â€”</p>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat">
+        <span class="stat-value" id="samples">â€”</span>
+        <span class="stat-label">Samples (24h)</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="downtimeSec">â€”</span>
+        <span class="stat-label">Downtime (24h)</span>
+      </div>
+    </section>
+
+    <section class="downtimes-section">
+      <h2 class="section-title">Recent downtime</h2>
+      <div class="downtimes-list" id="downtimesList">
+        <p class="empty" id="downtimesEmpty">No recorded downtime.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const statusBadge = document.getElementById('statusBadge');
+    const statusDot = document.getElementById('statusDot');
+    const statusLabel = document.getElementById('statusLabel');
+    const lastCheckEl = document.getElementById('lastCheck');
+    const uptimeFill = document.getElementById('uptimeFill');
+    const uptimePct = document.getElementById('uptimePct');
+    const samplesEl = document.getElementById('samples');
+    const downtimeSecEl = document.getElementById('downtimeSec');
+    const downtimesList = document.getElementById('downtimesList');
+    const downtimesEmpty = document.getElementById('downtimesEmpty');
+
+    function formatTime(ts) {
+      if (ts == null) return 'â€”';
+      const d = new Date(ts * 1000);
+      return d.toLocaleString();
+    }
+
+    function formatDuration(sec) {
+      if (sec == null || sec === 0) return '0s';
+      if (sec < 60) return sec + 's';
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      if (m < 60) return m + 'm ' + s + 's';
+      const h = Math.floor(m / 60);
+      const mm = m % 60;
+      return h + 'h ' + mm + 'm ' + s + 's';
+    }
+
+    async function fetchJson(path) {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error(r.statusText);
+      return r.json();
+    }
+
+    function renderStatus(data) {
+      const up = data.up;
+      statusBadge.className = 'status-badge ' + (up === true ? 'up' : up === false ? 'down' : 'unknown');
+      statusDot.setAttribute('aria-label', up === true ? 'Up' : up === false ? 'Down' : 'Unknown');
+      statusLabel.textContent = up === true ? 'Up' : up === false ? 'Down' : 'Checkingâ€¦';
+      lastCheckEl.textContent = data.last_check ? 'Last check: ' + formatTime(data.last_check) : 'â€”';
+    }
+
+    function renderStats(data) {
+      if (data.uptime_pct != null) {
+        uptimeFill.style.width = data.uptime_pct + '%';
+        uptimePct.textContent = data.uptime_pct + '% uptime (24h)';
+      }
+      samplesEl.textContent = data.samples ?? 'â€”';
+      downtimeSecEl.textContent = data.downtime_seconds != null ? formatDuration(data.downtime_seconds) : 'â€”';
+    }
+
+    function renderDowntimes(list) {
+      if (!list || list.length === 0) {
+        downtimesEmpty.hidden = false;
+        downtimesList.querySelectorAll('.downtime-item').forEach(el => el.remove());
+        return;
+      }
+      downtimesEmpty.hidden = true;
+      const fragment = document.createDocumentFragment();
+      list.forEach(d => {
+        const start = formatTime(d.started_at);
+        const end = formatTime(d.ended_at);
+        const duration = d.ended_at != null ? formatDuration(Math.round(d.ended_at - d.started_at)) : 'ongoing';
+        const div = document.createElement('div');
+        div.className = 'downtime-item';
+        div.innerHTML = '<span class="downtime-time">' + start + ' â†’ ' + end + '</span> <span class="downtime-dur">' + duration + '</span>';
+        fragment.appendChild(div);
+      });
+      downtimesList.querySelectorAll('.downtime-item').forEach(el => el.remove());
+      downtimesList.insertBefore(fragment, downtimesEmpty);
+    }
+
+    async function refresh() {
+      try {
+        const [status, stats, downtimes] = await Promise.all([
+          fetchJson('/api/status'),
+          fetchJson('/api/stats'),
+          fetchJson('/api/downtimes')
+        ]);
+        renderStatus(status);
+        renderStats(stats);
+        renderDowntimes(downtimes.downtimes);
+      } catch (e) {
+        statusBadge.className = 'status-badge unknown';
+        statusLabel.textContent = 'Offline / error';
+        lastCheckEl.textContent = 'Could not reach server.';
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>
