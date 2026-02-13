@@ -1,0 +1,5 @@
+{
+  "PING_TARGET": "8.8.8.8",
+  "POLL_INTERVAL": 20,
+  "PING_TIMEOUT": 5
+}

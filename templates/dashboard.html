@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Heimdall â€“ Network Status</title>
+  <title>Heimdall - Network Status</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -13,28 +13,28 @@
   <div class="wrap">
     <header class="header">
       <h1 class="title">Heimdall</h1>
-      <p class="subtitle">Network watcher Â· Monitoring <code>{{ target }}</code></p>
+      <p class="subtitle">Network watcher - Monitoring <code id="targetCode">{{ target }}</code></p>
     </header>
 
     <section class="status-card">
       <div class="status-badge" id="statusBadge" aria-live="polite">
         <span class="status-dot" id="statusDot"></span>
-        <span class="status-label" id="statusLabel">Checkingâ€¦</span>
+        <span class="status-label" id="statusLabel">Checking...</span>
       </div>
-      <p class="last-check" id="lastCheck">â€”</p>
+      <p class="last-check" id="lastCheck">-</p>
       <div class="uptime-bar" aria-hidden="true">
         <div class="uptime-fill" id="uptimeFill" style="width: 0%"></div>
       </div>
-      <p class="uptime-pct" id="uptimePct">â€”</p>
+      <p class="uptime-pct" id="uptimePct">-</p>
     </section>
 
     <section class="stats-grid">
       <div class="stat">
-        <span class="stat-value" id="samples">â€”</span>
+        <span class="stat-value" id="samples">-</span>
         <span class="stat-label">Samples (24h)</span>
       </div>
       <div class="stat">
-        <span class="stat-value" id="downtimeSec">â€”</span>
+        <span class="stat-value" id="downtimeSec">-</span>
         <span class="stat-label">Downtime (24h)</span>
       </div>
     </section>
@@ -44,6 +44,26 @@
       <div class="downtimes-list" id="downtimesList">
         <p class="empty" id="downtimesEmpty">No recorded downtime.</p>
       </div>
+    </section>
+
+    <section class="settings-section">
+      <h2 class="section-title">Settings</h2>
+      <form class="settings-form" id="settingsForm">
+        <label>
+          Ping target
+          <input id="cfgTarget" name="ping_target" type="text" required />
+        </label>
+        <label>
+          Poll interval (seconds)
+          <input id="cfgInterval" name="poll_interval" type="number" min="1" max="3600" required />
+        </label>
+        <label>
+          Ping timeout (seconds)
+          <input id="cfgTimeout" name="ping_timeout" type="number" min="1" max="60" required />
+        </label>
+        <button type="submit" id="cfgSaveBtn">Save settings</button>
+      </form>
+      <p class="settings-msg" id="settingsMsg" aria-live="polite"></p>
     </section>
   </div>
 
@@ -58,9 +78,16 @@
     const downtimeSecEl = document.getElementById('downtimeSec');
     const downtimesList = document.getElementById('downtimesList');
     const downtimesEmpty = document.getElementById('downtimesEmpty');
+    const targetCode = document.getElementById('targetCode');
+    const settingsForm = document.getElementById('settingsForm');
+    const cfgTarget = document.getElementById('cfgTarget');
+    const cfgInterval = document.getElementById('cfgInterval');
+    const cfgTimeout = document.getElementById('cfgTimeout');
+    const cfgSaveBtn = document.getElementById('cfgSaveBtn');
+    const settingsMsg = document.getElementById('settingsMsg');
 
     function formatTime(ts) {
-      if (ts == null) return 'â€”';
+      if (ts == null) return '-';
       const d = new Date(ts * 1000);
       return d.toLocaleString();
     }
@@ -78,16 +105,44 @@
 
     async function fetchJson(path) {
       const r = await fetch(path);
-      if (!r.ok) throw new Error(r.statusText);
-      return r.json();
+      let body = null;
+      try {
+        body = await r.json();
+      } catch (e) {
+        body = null;
+      }
+      if (!r.ok) {
+        const msg = body && body.error ? body.error : r.statusText;
+        throw new Error(msg);
+      }
+      return body;
+    }
+
+    async function postJson(path, payload) {
+      const r = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      let body = null;
+      try {
+        body = await r.json();
+      } catch (e) {
+        body = null;
+      }
+      if (!r.ok) {
+        const msg = body && body.error ? body.error : r.statusText;
+        throw new Error(msg);
+      }
+      return body;
     }
 
     function renderStatus(data) {
       const up = data.up;
       statusBadge.className = 'status-badge ' + (up === true ? 'up' : up === false ? 'down' : 'unknown');
       statusDot.setAttribute('aria-label', up === true ? 'Up' : up === false ? 'Down' : 'Unknown');
-      statusLabel.textContent = up === true ? 'Up' : up === false ? 'Down' : 'Checkingâ€¦';
-      lastCheckEl.textContent = data.last_check ? 'Last check: ' + formatTime(data.last_check) : 'â€”';
+      statusLabel.textContent = up === true ? 'Up' : up === false ? 'Down' : 'Checking...';
+      lastCheckEl.textContent = data.last_check ? 'Last check: ' + formatTime(data.last_check) : '-';
     }
 
     function renderStats(data) {
@@ -95,8 +150,8 @@
         uptimeFill.style.width = data.uptime_pct + '%';
         uptimePct.textContent = data.uptime_pct + '% uptime (24h)';
       }
-      samplesEl.textContent = data.samples ?? 'â€”';
-      downtimeSecEl.textContent = data.downtime_seconds != null ? formatDuration(data.downtime_seconds) : 'â€”';
+      samplesEl.textContent = data.samples ?? '-';
+      downtimeSecEl.textContent = data.downtime_seconds != null ? formatDuration(data.downtime_seconds) : '-';
     }
 
     function renderDowntimes(list) {
@@ -113,11 +168,32 @@
         const duration = d.ended_at != null ? formatDuration(Math.round(d.ended_at - d.started_at)) : 'ongoing';
         const div = document.createElement('div');
         div.className = 'downtime-item';
-        div.innerHTML = '<span class="downtime-time">' + start + ' â†’ ' + end + '</span> <span class="downtime-dur">' + duration + '</span>';
+        div.innerHTML = '<span class="downtime-time">' + start + ' -> ' + end + '</span> <span class="downtime-dur">' + duration + '</span>';
         fragment.appendChild(div);
       });
       downtimesList.querySelectorAll('.downtime-item').forEach(el => el.remove());
       downtimesList.insertBefore(fragment, downtimesEmpty);
+    }
+
+    function renderConfig(cfg) {
+      cfgTarget.value = cfg.ping_target ?? '';
+      cfgInterval.value = cfg.poll_interval ?? 10;
+      cfgTimeout.value = cfg.ping_timeout ?? 5;
+      targetCode.textContent = cfg.ping_target ?? targetCode.textContent;
+    }
+
+    function setSettingsMessage(msg, isError = false) {
+      settingsMsg.textContent = msg;
+      settingsMsg.className = 'settings-msg ' + (isError ? 'error' : 'ok');
+    }
+
+    async function loadConfig() {
+      try {
+        const cfg = await fetchJson('/api/config');
+        renderConfig(cfg);
+      } catch (e) {
+        setSettingsMessage('Could not load settings: ' + e.message, true);
+      }
     }
 
     async function refresh() {
@@ -137,6 +213,27 @@
       }
     }
 
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      cfgSaveBtn.disabled = true;
+      setSettingsMessage('Saving...');
+      try {
+        const payload = {
+          ping_target: cfgTarget.value.trim(),
+          poll_interval: Number(cfgInterval.value),
+          ping_timeout: Number(cfgTimeout.value)
+        };
+        const cfg = await postJson('/api/config', payload);
+        renderConfig(cfg);
+        setSettingsMessage('Settings saved.');
+      } catch (err) {
+        setSettingsMessage('Save failed: ' + err.message, true);
+      } finally {
+        cfgSaveBtn.disabled = false;
+      }
+    });
+
+    loadConfig();
     refresh();
     setInterval(refresh, 3000);
   </script>

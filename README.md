@@ -4,10 +4,10 @@ A Python app that continuously polls your home WiFi or network for uptime, logs 
 
 ## Features
 
-- **Continuous monitoring** – Pings a configurable target (default: `8.8.8.8`) at a set interval
-- **Downtime logging** – Records each outage with start and end time in SQLite
-- **Live dashboard** – Web UI showing current status, 24h uptime %, and recent downtime events
-- **Cross-platform** – Uses the system `ping` command (Windows and Unix)
+- **Continuous monitoring** - Pings a configurable target (default: `8.8.8.8`) at a set interval
+- **Downtime logging** - Records each outage with start and end time in SQLite
+- **Live dashboard** - Web UI showing current status, 24h uptime %, and recent downtime events
+- **Cross-platform** - Uses the system `ping` command (Windows and Unix)
 
 ## Quick start
 
@@ -57,10 +57,10 @@ On Linux/macOS use `export HEIMDALL_PING_TARGET=192.168.1.1` etc.
 
 ## API
 
-- `GET /` – Dashboard (HTML)
-- `GET /api/status` – Current status (up/down, last check, current downtime)
-- `GET /api/stats` – 24h uptime % and sample count
-- `GET /api/downtimes` – Recent downtime intervals
+- `GET /` - Dashboard (HTML)
+- `GET /api/status` - Current status (up/down, last check, current downtime)
+- `GET /api/stats` - 24h uptime % and sample count
+- `GET /api/downtimes` - Recent downtime intervals
 
 ## Requirements
 
