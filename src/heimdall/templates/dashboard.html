@@ -13,7 +13,7 @@
   <div class="wrap">
     <header class="header">
       <img class="brand-logo" src="{{ url_for('static', filename='logo.png') }}" alt="Heimdall logo" />
-      <p class="subtitle">Currently monitoring: <code id="targetCode">{{ target }}</code></p>
+      <p class="subtitle">Currently monitoring: <code id="targetCode">{{ targets }}</code></p>
       <p class="subtitle">Access URL (any device on the same network): <code>http://{{ lan_ip }}:{{ flask_port }}</code></p>
     </header>
 
@@ -51,8 +51,8 @@
       <h2 class="section-title">Settings</h2>
       <form class="settings-form" id="settingsForm">
         <label>
-          Ping target
-          <input id="cfgTarget" name="ping_target" type="text" required />
+          Ping targets (comma-separated)
+          <input id="cfgTargets" name="ping_targets" type="text" required />
         </label>
         <label>
           Poll interval (seconds)
@@ -81,7 +81,7 @@
     const downtimesEmpty = document.getElementById('downtimesEmpty');
     const targetCode = document.getElementById('targetCode');
     const settingsForm = document.getElementById('settingsForm');
-    const cfgTarget = document.getElementById('cfgTarget');
+    const cfgTargets = document.getElementById('cfgTargets');
     const cfgInterval = document.getElementById('cfgInterval');
     const cfgTimeout = document.getElementById('cfgTimeout');
     const cfgSaveBtn = document.getElementById('cfgSaveBtn');
@@ -177,10 +177,11 @@
     }
 
     function renderConfig(cfg) {
-      cfgTarget.value = cfg.ping_target ?? '';
+      const targets = Array.isArray(cfg.ping_targets) ? cfg.ping_targets : (cfg.ping_target ? [cfg.ping_target] : []);
+      cfgTargets.value = targets.join(', ');
       cfgInterval.value = cfg.poll_interval ?? 10;
       cfgTimeout.value = cfg.ping_timeout ?? 5;
-      targetCode.textContent = cfg.ping_target ?? targetCode.textContent;
+      targetCode.textContent = targets.length ? targets.join(', ') : targetCode.textContent;
     }
 
     function setSettingsMessage(msg, isError = false) {
@@ -220,7 +221,7 @@
       setSettingsMessage('Saving...');
       try {
         const payload = {
-          ping_target: cfgTarget.value.trim(),
+          ping_targets: cfgTargets.value.trim(),
           poll_interval: Number(cfgInterval.value),
           ping_timeout: Number(cfgTimeout.value)
         };

@@ -22,11 +22,26 @@ def _ping_host(host: str, timeout_seconds: int) -> bool:
         result = subprocess.run(
             cmd,
             capture_output=True,
+            text=True,
             timeout=timeout_seconds + 2,
         )
+
+        if platform.system().lower() == "windows":
+            # Windows ping may return 0 for "Destination net unreachable".
+            # Only treat it as up when an actual echo reply is present.
+            output = f"{result.stdout}\n{result.stderr}".lower()
+            return result.returncode == 0 and "ttl=" in output
+
         return result.returncode == 0
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
         return False
+
+
+def _is_internet_up(targets, timeout_seconds: int) -> bool:
+    for target in targets:
+        if _ping_host(target, timeout_seconds):
+            return True
+    return False
 
 
 def get_status():
@@ -38,7 +53,7 @@ def get_status():
 def _run_loop():
     was_up = None
     while True:
-        up = _ping_host(config.PING_TARGET, config.PING_TIMEOUT)
+        up = _is_internet_up(config.PING_TARGETS, config.PING_TIMEOUT)
         now = time.time()
         with _lock:
             _current_status["up"] = up

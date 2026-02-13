@@ -105,26 +105,48 @@ def get_current_downtime():
 
 
 def get_uptime_stats():
-    """Compute uptime percentage and total downtime from status_log over last 24h (or all if small)."""
+    """Compute uptime percentage and downtime over the last 24h."""
+    now = time.time()
+    day_ago = now - 24 * 3600
+
     with get_connection() as conn:
-        day_ago = time.time() - 24 * 3600
         cursor = conn.execute(
             "SELECT at, up FROM status_log WHERE at >= ? ORDER BY at ASC",
             (day_ago,),
         )
         rows = cursor.fetchall()
-    if not rows:
-        return {"uptime_pct": None, "samples": 0, "downtime_seconds": None}
-    total = len(rows)
-    up_count = sum(1 for r in rows if r["up"])
-    # Approximate downtime in seconds (each sample is ~ POLL_INTERVAL)
-    interval = config.POLL_INTERVAL
-    downtime_seconds = (total - up_count) * interval
-    uptime_pct = (up_count / total * 100) if total else None
+
+        # Intervals that overlap the last 24h window, including an open downtime.
+        cursor = conn.execute(
+            """
+            SELECT started_at, ended_at
+            FROM downtime
+            WHERE started_at < ? AND (ended_at IS NULL OR ended_at > ?)
+            """,
+            (now, day_ago),
+        )
+        intervals = cursor.fetchall()
+
+    if rows:
+        total = len(rows)
+        up_count = sum(1 for r in rows if r["up"])
+        uptime_pct = (up_count / total * 100) if total else None
+    else:
+        total = 0
+        uptime_pct = None
+
+    downtime_seconds = 0
+    for interval in intervals:
+        started_at = max(interval["started_at"], day_ago)
+        ended_at = interval["ended_at"] if interval["ended_at"] is not None else now
+        ended_at = min(ended_at, now)
+        if ended_at > started_at:
+            downtime_seconds += ended_at - started_at
+
     return {
         "uptime_pct": round(uptime_pct, 2) if uptime_pct is not None else None,
         "samples": total,
-        "downtime_seconds": downtime_seconds,
+        "downtime_seconds": int(round(downtime_seconds)),
     }
 
 

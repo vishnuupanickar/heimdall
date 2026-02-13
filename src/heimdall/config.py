@@ -6,15 +6,26 @@ from pathlib import Path
 
 _LOCK = threading.RLock()
 
-SETTINGS_PATH = Path(os.environ.get("HEIMDALL_SETTINGS_FILE", "heimdall.settings.json"))
+APP_BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+def _resolve_app_path(env_name, default_name):
+    raw = Path(os.environ.get(env_name, default_name)).expanduser()
+    if not raw.is_absolute():
+        raw = APP_BASE_DIR / raw
+    return raw.resolve()
+
+
+SETTINGS_PATH = _resolve_app_path("HEIMDALL_SETTINGS_FILE", "heimdall.settings.json")
 
 # Base config from environment variables.
-_BASE_PING_TARGET = os.environ.get("HEIMDALL_PING_TARGET", "8.8.8.8")
+_BASE_PING_TARGETS_RAW = os.environ.get("HEIMDALL_PING_TARGETS", "8.8.8.8,1.1.1.1")
+_BASE_PING_TARGET = os.environ.get("HEIMDALL_PING_TARGET")
 _BASE_POLL_INTERVAL = int(os.environ.get("HEIMDALL_POLL_INTERVAL", "10"))
 _BASE_PING_TIMEOUT = int(os.environ.get("HEIMDALL_PING_TIMEOUT", "5"))
 
 # SQLite database path
-DATABASE_PATH = os.environ.get("HEIMDALL_DB", "heimdall.db")
+DATABASE_PATH = str(_resolve_app_path("HEIMDALL_DB", "heimdall.db"))
 
 # Flask server host and port
 SERVER_HOST = os.environ.get("HEIMDALL_HOST", "0.0.0.0")
@@ -61,12 +72,38 @@ def _normalize_target(value):
     return target
 
 
+def _normalize_targets(value):
+    if value is None:
+        raise ValueError("ping_targets is required.")
+
+    if isinstance(value, str):
+        raw_items = [item.strip() for item in value.split(",")]
+    elif isinstance(value, list):
+        raw_items = [str(item).strip() for item in value]
+    else:
+        raise ValueError("ping_targets must be a comma-separated string or a list.")
+
+    normalized = []
+    for item in raw_items:
+        if not item:
+            continue
+        normalized.append(_normalize_target(item))
+
+    # Preserve order while removing duplicates.
+    deduped = list(dict.fromkeys(normalized))
+    if not deduped:
+        raise ValueError("ping_targets must include at least one target.")
+    return deduped
+
+
 def _validate_update(payload):
     if not isinstance(payload, dict):
         raise ValueError("JSON body must be an object.")
     normalized = {}
+    if "ping_targets" in payload:
+        normalized["PING_TARGETS"] = _normalize_targets(payload["ping_targets"])
     if "ping_target" in payload:
-        normalized["PING_TARGET"] = _normalize_target(payload["ping_target"])
+        normalized["PING_TARGETS"] = [_normalize_target(payload["ping_target"])]
     if "poll_interval" in payload:
         normalized["POLL_INTERVAL"] = _coerce_positive_int(
             payload["poll_interval"], "poll_interval", minimum=1, maximum=3600
@@ -84,8 +121,10 @@ def _validate_update(payload):
 
 
 def _serialize_runtime():
+    primary_target = PING_TARGETS[0] if PING_TARGETS else None
     return {
-        "ping_target": PING_TARGET,
+        "ping_target": primary_target,
+        "ping_targets": list(PING_TARGETS),
         "poll_interval": POLL_INTERVAL,
         "ping_timeout": PING_TIMEOUT,
         "settings_file": str(SETTINGS_PATH),
@@ -98,21 +137,21 @@ def get_runtime_config():
 
 
 def update_runtime_config(payload, persist=True):
-    global PING_TARGET, POLL_INTERVAL, PING_TIMEOUT
+    global PING_TARGETS, POLL_INTERVAL, PING_TIMEOUT
     normalized = _validate_update(payload)
     with _LOCK:
-        next_target = normalized.get("PING_TARGET", PING_TARGET)
+        next_targets = normalized.get("PING_TARGETS", PING_TARGETS)
         next_interval = normalized.get("POLL_INTERVAL", POLL_INTERVAL)
         next_timeout = normalized.get("PING_TIMEOUT", PING_TIMEOUT)
         if next_timeout > next_interval:
             raise ValueError("ping_timeout cannot be greater than poll_interval.")
-        PING_TARGET = next_target
+        PING_TARGETS = next_targets
         POLL_INTERVAL = next_interval
         PING_TIMEOUT = next_timeout
         if persist:
             _write_settings_file(
                 {
-                    "PING_TARGET": PING_TARGET,
+                    "PING_TARGETS": list(PING_TARGETS),
                     "POLL_INTERVAL": POLL_INTERVAL,
                     "PING_TIMEOUT": PING_TIMEOUT,
                 }
@@ -121,7 +160,16 @@ def update_runtime_config(payload, persist=True):
 
 
 _stored = _read_settings_file()
-PING_TARGET = _normalize_target(_stored.get("PING_TARGET", _BASE_PING_TARGET))
+if "PING_TARGETS" in _stored:
+    _initial_targets = _stored.get("PING_TARGETS")
+elif "PING_TARGET" in _stored:
+    _initial_targets = [_stored.get("PING_TARGET")]
+elif _BASE_PING_TARGET:
+    _initial_targets = [_BASE_PING_TARGET]
+else:
+    _initial_targets = _BASE_PING_TARGETS_RAW
+
+PING_TARGETS = _normalize_targets(_initial_targets)
 POLL_INTERVAL = _coerce_positive_int(
     _stored.get("POLL_INTERVAL", _BASE_POLL_INTERVAL),
     "poll_interval",

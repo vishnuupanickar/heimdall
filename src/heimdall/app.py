@@ -25,7 +25,7 @@ def _get_local_lan_ip():
 def index():
     return render_template(
         "dashboard.html",
-        target=config.PING_TARGET,
+        targets=", ".join(config.PING_TARGETS),
         lan_ip=_get_local_lan_ip(),
         flask_port=config.SERVER_PORT,
     )

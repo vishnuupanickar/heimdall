@@ -1,5 +1,8 @@
 {
-  "PING_TARGET": "8.8.8.8",
+  "PING_TARGETS": [
+    "8.8.8.8",
+    "1.1.1.1"
+  ],
   "POLL_INTERVAL": 10,
   "PING_TIMEOUT": 5
 }
