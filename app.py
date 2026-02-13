@@ -4,7 +4,7 @@ from flask import Flask, jsonify, render_template
 
 import config
 import database
-from monitor import get_status, start_monitor
+from heimdall import get_status, start_monitor
 
 app = Flask(__name__)
 
