@@ -1,3 +1,14 @@
+Metadata-Version: 2.4
+Name: heimdall-network-monitor
+Version: 0.2.1
+Summary: A Python app that continuously polls your home WiFi and network uptime, logs any downtime, and serves a live status dashboard in your browser. The dashboard can be accessed by any device on the same network.
+Author-email: Vishnuu Panickar <vishnuu09@gmail.com>
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: flask>=3.0.0
+Dynamic: license-file
+
 <p align="center">
   <img src="src/static/logo.png" alt="Heimdall logo" width="420" />
 </p>
