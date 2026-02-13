@@ -3,11 +3,11 @@ import socket
 import time
 from flask import Flask, jsonify, render_template, request
 
-import config
-import database
-from monitor import get_status, start_monitor
+from . import config
+from . import database
+from .monitor import get_status, start_monitor
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 
 def _get_local_lan_ip():

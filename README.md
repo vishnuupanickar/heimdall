@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/static/logo.png" alt="Heimdall logo" width="420" />
+  <img src="src/heimdall/static/logo.png" alt="Heimdall logo" width="420" />
 </p>
 
 [![Upload Python Package](https://github.com/vishnuupanickar/heimdall/actions/workflows/python-publish.yml/badge.svg?branch=master)](https://github.com/vishnuupanickar/heimdall/actions/workflows/python-publish.yml)
@@ -42,16 +42,17 @@ heimdall/
   pyproject.toml
   README.md
   src/
-    app.py
-    config.py
-    database.py
-    monitor.py
-    heimdall.py
-    templates/
-      dashboard.html
-    static/
-      style.css
-      logo.png
+    heimdall/
+      __main__.py
+      app.py
+      config.py
+      database.py
+      monitor.py
+      templates/
+        dashboard.html
+      static/
+        style.css
+        logo.png
 ```
 
 1. **Create a virtual environment and install dependencies**
@@ -60,13 +61,15 @@ heimdall/
    python -m venv .venv
    .venv\Scripts\activate   # Windows
    # source .venv/bin/activate   # macOS/Linux
-   pip install -r requirements.txt
+   pip install -e .
    ```
+
+   `pip install -e .` installs this project in editable mode so local source changes are picked up without reinstalling.
 
 2. **Run the app**
 
    ```bash
-   python src/heimdall.py
+   python -m heimdall
    ```
 
 3. **Open the dashboard**
@@ -94,7 +97,7 @@ Environment variables (optional):
 ```bash
 set HEIMDALL_PING_TARGET=8.8.8.8
 set HEIMDALL_POLL_INTERVAL=5
-python src/heimdall.py
+python -m heimdall
 ```
 
 On Linux/macOS use `export HEIMDALL_PING_TARGET=192.168.1.1` etc.

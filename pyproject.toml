@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "heimdall-network-monitor"
-version = "0.2.3"
+version = "0.2.4"
 requires-python = ">=3.8"
 dependencies = [
     "flask>=3.0.0",
@@ -10,3 +14,13 @@ authors = [
     {name = "Vishnuu Panickar", email= "vishnuu09@gmail.com"}
 ]
 readme = "README.md"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["heimdall*"]
+
+[tool.setuptools.package-data]
+heimdall = ["templates/*.html", "static/*.css", "static/*.png"]

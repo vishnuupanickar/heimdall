@@ -4,7 +4,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-import config
+from . import config
 
 
 def get_db_path() -> Path:

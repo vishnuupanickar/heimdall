@@ -1,6 +1,0 @@
-app
-config
-database
-heimdall
-static
-templates

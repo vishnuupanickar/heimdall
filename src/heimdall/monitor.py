@@ -5,8 +5,8 @@ import sys
 import threading
 import time
 
-import config
-import database
+from . import config
+from . import database
 
 # Global state for the dashboard
 _current_status = {"up": None, "last_check": None, "last_change": None}
